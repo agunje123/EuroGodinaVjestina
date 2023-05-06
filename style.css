@@ -1,1 +1,40 @@
+body {
+    margin:0;
+    font-family: tahoma, sans-serif;
+}
 
+.header_image {
+    background-image: url("images/background_header.jpg");
+    background-repeat: no-repeat;
+    background-color: whitesmoke;
+    background-size: 100%;
+    background-attachment: fixed;
+
+    height:100vh;
+}
+
+.header_content{
+    text-align: center;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#container {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+}
+
+.country{
+    fill:gainsboro;
+    stroke-width: 1px;
+    stroke: rgba(0, 0, 0, 0.1);
+}
+
+path:hover {
+    fill:whitesmoke;
+    cursor:pointer;
+}
