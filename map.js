@@ -42,7 +42,6 @@ var mapSvg =
 //SVG element slidera
 var sliderSvg = 
     d3.select("#slider")
-    .attr("class", "slider")
     .append("svg")
     .attr("width", sliderWidth)
     .attr("height", sliderHeight);
