@@ -3,6 +3,10 @@ var attributeArray = [];
 var currentAttribute = 0;
 var playing = false;
 
+var tooltipDiv = d3.select("body").append("div")    
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
 function onInit() {
 
   setMap();
@@ -46,7 +50,7 @@ function loadData() {
     .await(processData);
 }
 
-// Accepts any errors as the first argument,
+// Accepts any errors as the first argument
 function processData(error, europeMap, countryData) {
 
   // For easier loop readability, selects the geometry of the country
@@ -79,22 +83,50 @@ function drawMap(europeMap) {
     .append("path") // Prepare data to be appended to paths
     .attr("class", "country") // Class for styling with css
     .attr("id", function(d) { return "code_" + d.properties.id; }, true)  // Unique id
-    .attr("d", path); // Create them using the svg path generator
+    .attr("d", path) // Create them using the svg path generator
+    .on("mouseover", function(d) {      
+      tooltipDiv.transition()     
+          .duration(500)      
+          .style("opacity", 1);   
+      if (d.properties[attributeArray[currentAttribute]] != undefined && d.properties[attributeArray[currentAttribute]] != 0) { 
+        tooltipDiv.html(d.properties.admin + "'s percentage of the ICT sector on GDP: " + d.properties[attributeArray[currentAttribute]])  
+          .style("left", (d3.event.pageX) + "px")     
+          .style("top", (d3.event.pageY - 28) + "px");  
+      } else {
+        tooltipDiv.html(d.properties.admin)  
+          .style("left", (d3.event.pageX) + "px")     
+          .style("top", (d3.event.pageY - 28) + "px");  
+      }
+    })                  
+    .on("mouseout", function(d) {       
+        tooltipDiv.transition()        
+            .duration(500)      
+            .style("opacity", 0);   
+    });
 
   var dataRange = getDataRange(); // Get the range of data
   d3.selectAll('.country')  // Select all countries
-  .attr('fill', function(d) {
-      return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // Color them
+  .attr('fill', function(d) { // Color them if they have defined values
+    if (d.properties[attributeArray[currentAttribute]] == 0 || d.properties[attributeArray[currentAttribute]] == undefined){
+      return "#dbdbdb"; 
+    } else {
+      return getColor(d.properties[attributeArray[currentAttribute]], dataRange)
+    } 
   });
 }
 
 function sequenceMap() {
   
   var dataRange = getDataRange(); // Get the range of data
-  d3.selectAll('.country').transition()  // Select all countries and prepare for a transition to new values
+  d3.selectAll('.country')
+    .transition()  // Select all countries and prepare for a transition to new values
     .duration(750)  // Duration of the transition
     .attr('fill', function(d) {
-      return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // New colors
+      if (d.properties[attributeArray[currentAttribute]] == 0 || d.properties[attributeArray[currentAttribute]] == undefined){
+        return "#dbdbdb";  // New colors
+      } else {
+        return getColor(d.properties[attributeArray[currentAttribute]], dataRange)
+      }
     })
 
 }
@@ -106,11 +138,11 @@ function getColor(countryValue, dataRange) {
   // For readability
   var min = dataRange[0];
   var max = dataRange[1];
-  var interval = (max - min)/5;
+  var interval = (max - min)/4;
 
   var color = d3.scale.threshold()
-    .domain([min, min + interval, min + (2*interval), min + (3*interval), min + (4*interval), max])
-    .range(['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']);
+    .domain([min, min + interval, min + (2*interval), min + (3*interval), max])
+    .range(['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494']);
 
   return color(countryValue);
 }
@@ -120,16 +152,16 @@ function getColor(countryValue, dataRange) {
 // Returns the minimum and maximum values in the form of an array.
 function getDataRange() {
 
-  var min = Infinity;
-  var max = -Infinity; 
+  var min = 10;
+  var max = 0; 
 
   d3.selectAll('.country')
     .each(function(d,i) {
       var currentValue = d.properties[attributeArray[currentAttribute]];
-      if(currentValue <= min && currentValue != -99 && currentValue != 'undefined') {
+      if(currentValue <= min && currentValue != undefined && currentValue != 0 ) {
         min = currentValue;
       }
-      if(currentValue >= max && currentValue != -99 && currentValue != 'undefined') {
+      if(currentValue >= max && currentValue != undefined && currentValue != 0 ) {
         max = currentValue;
       }
   });
