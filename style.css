@@ -27,35 +27,22 @@ body {
     padding: 20px;
 }
 
-.country{
-    fill:gainsboro;
-    stroke-width: 1px;
-    stroke: rgba(0, 0, 0, 0.1);
+#wrapper {
+    width: 960px;
+    margin: -30px auto 0;
 }
 
-path:hover {
-    fill:whitesmoke;
-    cursor:pointer;
+.stroke {
+    fill: none;
+    stroke: #888;
+    stroke-width: 2px;
 }
 
-#slider {
-    width: 920px;
-    margin-left: auto;
-    margin-right: auto;
+.boundary {
+    fill: none;
+    stroke: #fff;
+    stroke-width: .5px;
 }
-
-.slideraxis {
-    fill: gainsboro;
+.country {
+    stroke: white;
 }
-
-.start_value {
-    padding-left: 4px;
-    float: left;
-    font-size: 0.8em;
-  }
-  
-.end_value {
-    padding-right: 4px;
-    float: right;
-    font-size: 0.8em;
-  }

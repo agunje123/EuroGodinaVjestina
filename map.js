@@ -1,148 +1,166 @@
-var mapWidth = 920;
-var mapHeight = 600;
+var width, height, projection, path, svg;
+var attributeArray = [];
+var currentAttribute = 0;
+var playing = false;
 
-var sliderWidth = 920;
-var sliderHeight = 50;
+function onInit() {
 
-var pointerHeight = 330;
-var pointerWidth = 885;
-var trans = 60;
+  setMap();
+  animateMap();
 
-var years = new Array(
-    "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"
-  );
-years.reverse();
+}
 
-var scaleDomain = [0, years.length - 1];
+// Just a setup of some basic parameters
+function setMap() {
 
-var projection = 
-    d3.geo.mercator()
+  // Map width and height
+  width = 920;  
+  height = 600;  
+
+  // Defines our projection
+  projection = d3.geo.mercator()
     .center([13, 52])
-    .translate([mapWidth/2, mapHeight/2])
-    .scale([mapWidth/1.5]);
+    .translate([width/2, height/2])
+    .scale([width/1.5]);
 
-//TODO: Treba podesiti domenu i rang, colorbrewer!
-var colorScale = 
-    d3.scale.threshold()
-    .domain([0, 1000000, 10000000, 50000000, 100000000, 500000000, 1000000000, 2000000000])
-    .range(['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','white']);
-
-//Path generator
-var path = 
-    d3.geo.path()
+  // Path generator with the projection inside of it
+  path = d3.geo.path()
     .projection(projection);
 
-//SVG element mape
-var mapSvg = 
-    d3.select("#container")
-    .append("svg")
-    .attr("width", mapWidth)
-    .attr("height", mapHeight)
+  // Appends an svg to our html div to hold our map
+  svg = d3.select("#container")
+    .append("svg")   
+    .attr("width", width)
+    .attr("height", height);
 
-//SVG element slidera
-var sliderSvg = 
-    d3.select("#slider")
-    .append("svg")
-    .attr("width", sliderWidth)
-    .attr("height", sliderHeight);
+  // Loads the data
+  loadData();  
+}
 
-//Loading JSON data
-d3.json("data/ne_50m_admin_0_countries_simplified.json", function(json) {
-    mapSvg.selectAll("path")
-    .data(json.features)
-    .enter()
-    .append("path")
-    .attr("d", path)
-    .attr("class", "country");
+// Waits for both the geojson and csv files to load, then calls the function processData
+function loadData() {
 
-    var pointerdata = [
-        {
-          x: 0,
-          y: 0
-        },
-        {
-          x: 0,
-          y: 25
-        },
-        {
-          x: 25,
-          y: 25
-        },
-        {
-          x: 25,
-          y: 0
+  queue() 
+    .defer(d3.json, "data/world-topo.json")
+    .defer(d3.csv, "data/podaci_transformirani.csv")
+    .await(processData);
+}
+
+// Accepts any errors as the first argument,
+function processData(error, europeMap, countryData) {
+
+  // For easier loop readability, selects the geometry of the country
+  var countries = europeMap.objects.countries.geometries;
+
+  for (var i in countries) {    // For each geometry object
+    for (var j in countryData) {  // For each row in the CSV
+      if(countries[i].properties.id == countryData[j].id) {   // If the names match
+        for(var k in countryData[j]) {   // For each column in the row within the CSV
+          if(k != 'name' && k != 'id') { 
+            if(attributeArray.indexOf(k) == -1) { 
+               attributeArray.push(k); // Add new column headings to our array for later
+            }
+            countries[i].properties[k] = Number(countryData[j][k])  // Add each CSV column key/value to the geometry object
+          } 
         }
-    ];
+        break;
+      }
+    }
+  }
+  d3.select('#clock').html(attributeArray[currentAttribute]);  // Populate the clock with the current year
+  drawMap(europeMap); 
+} 
 
-    var drag = d3.behavior
-    .drag()
-    .origin(function() {
-      return {
-        x: d3.select(this).attr("x"),
-        y: d3.select(this).attr("y")
-      };
+function drawMap(europeMap) {
+
+  svg.selectAll(".country")   // Select the non-existant country objects
+    .data(topojson.feature(europeMap, europeMap.objects.countries).features)  // Bind data to the non-existent objects
+    .enter()
+    .append("path") // Prepare data to be appended to paths
+    .attr("class", "country") // Class for styling with css
+    .attr("id", function(d) { return "code_" + d.properties.id; }, true)  // Unique id
+    .attr("d", path); // Create them using the svg path generator
+
+  var dataRange = getDataRange(); // Get the range of data
+  d3.selectAll('.country')  // Select all countries
+  .attr('fill', function(d) {
+      return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // Color them
+  });
+}
+
+function sequenceMap() {
+  
+  var dataRange = getDataRange(); // Get the range of data
+  d3.selectAll('.country').transition()  // Select all countries and prepare for a transition to new values
+    .duration(750)  // Duration of the transition
+    .attr('fill', function(d) {
+      return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // New colors
     })
-    .on("dragstart", dragstart)
-    .on("drag", dragmove)
-    .on("dragend", dragend);
 
-    var pointerScale = d3.scale
-    .linear()
-    .domain(scaleDomain)
-    .rangeRound([0, pointerWidth]);
+}
 
-    sliderSvg
-    .append("g")
-    .append("rect")
-    .attr("class", "slideraxis")
-    .attr("width", sliderWidth)
-    .attr("height", 7)
-    .attr("x", 0)
-    .attr("y", 16);
+// Function takes in the value of the country and the data range.
+// Returns the color according to a equal interval scale.
+function getColor(countryValue, dataRange) {
 
-    var cursor = sliderSvg
-    .append("g")
-    .attr("class", "move")
-    .append("svg")
-    .attr("x", pointerWidth)
-    .attr("y", 7)
-    .attr("width", 30)
-    .attr("height", 60);
+  // For readability
+  var min = dataRange[0];
+  var max = dataRange[1];
+  var interval = (max - min)/5;
 
-    cursor.call(drag);
-    var drawline = 
-    d3.svg
-      .line()
-      .x(function(d) {
-        return d.x;
-      })
-      .y(function(d) {
-        return d.y;
-      })
-      .interpolate("linear");
+  var color = d3.scale.threshold()
+    .domain([min, min + interval, min + (2*interval), min + (3*interval), min + (4*interval), max])
+    .range(['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494']);
 
-    cursor
-      .append("path")
-      .attr("class", "cursor")
-      .attr("transform", "translate(" + 7 + ",0)")
-      .attr("d", drawline(pointerdata));
-    cursor.on("mouseover", function() {
-      d3.select(".move").style("cursor", "hand");
-    });
+  return color(countryValue);
+}
 
-    function dragmove() {
-      var x = Math.max(0, Math.min(pointerWidth, d3.event.x));
-      d3.select(this).attr("x", x);
-      var z = parseInt(pointerScale.invert(x));
-      aux = z;
-      drawMap(z);
-    }
 
-    function dragstart() {
-      d3.select(".cursor").style("fill", "#D9886C");
-    }
+// Function loops through all the data values from the current data attribute.
+// Returns the minimum and maximum values in the form of an array.
+function getDataRange() {
 
-    function dragend() {
-      d3.select(".cursor").style("fill", "");
-    }
-});
+  var min = Infinity;
+  var max = -Infinity; 
+
+  d3.selectAll('.country')
+    .each(function(d,i) {
+      var currentValue = d.properties[attributeArray[currentAttribute]];
+      if(currentValue <= min && currentValue != -99 && currentValue != 'undefined') {
+        min = currentValue;
+      }
+      if(currentValue >= max && currentValue != -99 && currentValue != 'undefined') {
+        max = currentValue;
+      }
+  });
+  return [min,max];
+}
+
+// More information on what the function does inside.
+function animateMap() {
+
+  var timer;
+  d3.select('#play')  
+    .on('click', function() {
+      if(playing == false) {  // If the map is currently not playing
+        timer = setInterval(function(){   // set a JS interval
+          if(currentAttribute < attributeArray.length-1) {  
+              currentAttribute +=1;  // Increment the attribute counter
+          } else {
+              currentAttribute = 0;  // Reset it to zero
+          }
+          sequenceMap();  // Update the map 
+          d3.select('#clock').html(attributeArray[currentAttribute]);  // Update the clock
+        }, 2000);
+      
+        d3.select(this).html('stop');  // Change the button to say "stop"
+        playing = true;   // Change the boolean 
+      } else {    // If it is playing
+        clearInterval(timer);   // Stop the animation by clearing the interval
+        d3.select(this).html('play');   // Change the button to say "play"
+        playing = false;   // Change the boolean
+      }
+  });
+}
+
+window.onload = onInit();

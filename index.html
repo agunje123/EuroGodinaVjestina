@@ -5,6 +5,8 @@
         <title>European Year of Skills</title>
         <script src="https://d3js.org/d3.v3.min.js"></script>
         <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+        <script src="http://d3js.org/queue.v1.min.js"></script>
+        <script src="http://d3js.org/topojson.v1.min.js"></script>
         <link href="style.css" rel="stylesheet">
     </head>
 
@@ -16,10 +18,10 @@
             </div>
         </div> -->
 
-        <div id="container"></div>
-        <div id="slider">
-            <div class="start_value">2012</div>
-            <div class="end_value">2022</div>
+        <div id="wrapper">
+            <div id="container"></div>
+            <button id="play">play</button>
+            <span id="clock">year</span>
         </div>
         <script src="map.js"></script>
     </body>
