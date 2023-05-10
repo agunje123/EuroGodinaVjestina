@@ -23,7 +23,7 @@ function setMap() {
 
   // Defines our projection
   projection = d3.geo.mercator()
-    .center([13, 52])
+    .center([13, 53])
     .translate([width/2, height/2])
     .scale([width/1.5]);
 
@@ -89,7 +89,7 @@ function drawMap(europeMap) {
           .duration(500)      
           .style("opacity", 1);   
       if (d.properties[attributeArray[currentAttribute]] != undefined && d.properties[attributeArray[currentAttribute]] != 0) { 
-        tooltipDiv.html(d.properties.admin + "'s percentage of the ICT sector on GDP: " + d.properties[attributeArray[currentAttribute]])  
+        tooltipDiv.html(d.properties.admin + "'s percentage: " + d.properties[attributeArray[currentAttribute]] + "%")  
           .style("left", (d3.event.pageX) + "px")     
           .style("top", (d3.event.pageY - 28) + "px");  
       } else {
@@ -103,6 +103,15 @@ function drawMap(europeMap) {
             .duration(500)      
             .style("opacity", 0);   
     });
+
+    svg.append("rect") // Outline of the map
+    .attr("x", 1)
+    .attr("y", 1)
+    .attr("height", 598)
+    .attr("width", 918)
+    .style("stroke", "black")
+    .style("fill", "none")
+    .style("stroke-width", 2);
 
   var dataRange = getDataRange(); // Get the range of data
   d3.selectAll('.country')  // Select all countries
@@ -186,11 +195,11 @@ function animateMap() {
           d3.select('#clock').html(attributeArray[currentAttribute]);  // Update the clock
         }, 2000);
       
-        d3.select(this).html('stop');  // Change the button to say "stop"
+        d3.select(this).html('Stop');  // Change the button to say "stop"
         playing = true;   // Change the boolean 
       } else {    // If it is playing
         clearInterval(timer);   // Stop the animation by clearing the interval
-        d3.select(this).html('play');   // Change the button to say "play"
+        d3.select(this).html('Play');   // Change the button to say "play"
         playing = false;   // Change the boolean
       }
   });
