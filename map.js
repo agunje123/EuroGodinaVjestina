@@ -41,7 +41,7 @@ function setMap() {
   loadData();  
 }
 
-// Waits for both the geojson and csv files to load, then calls the function processData
+// Waits for both the json and csv files to load, then calls the function processData
 function loadData() {
 
   queue() 
@@ -113,6 +113,7 @@ function drawMap(europeMap) {
       return getColor(d.properties[attributeArray[currentAttribute]], dataRange)
     } 
   });
+  drawLegend();
 }
 
 function sequenceMap() {
@@ -128,7 +129,7 @@ function sequenceMap() {
         return getColor(d.properties[attributeArray[currentAttribute]], dataRange)
       }
     })
-
+  drawLegend();
 }
 
 // Function takes in the value of the country and the data range.
@@ -141,8 +142,8 @@ function getColor(countryValue, dataRange) {
   var interval = (max - min)/4;
 
   var color = d3.scale.threshold()
-    .domain([min, min + interval, min + (2*interval), min + (3*interval), max])
-    .range(['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494']);
+    .domain([min + interval, min + (2*interval), min + (3*interval)])
+    .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
 
   return color(countryValue);
 }
@@ -152,8 +153,8 @@ function getColor(countryValue, dataRange) {
 // Returns the minimum and maximum values in the form of an array.
 function getDataRange() {
 
-  var min = 10;
-  var max = 0; 
+  var min = Infinity;
+  var max = -Infinity; 
 
   d3.selectAll('.country')
     .each(function(d,i) {
@@ -193,6 +194,55 @@ function animateMap() {
         playing = false;   // Change the boolean
       }
   });
+}
+
+//Function deletes any previous legend, draws a new one based on the data of the current year.
+function drawLegend() {
+
+  d3.select("#legend")
+    .select("svg.legend")
+    .remove(); // Removes previous legend if there is any
+
+  var dataRange = getDataRange(); // Fetches the data range 
+  var min = dataRange[0];
+  var max = dataRange[1];
+  var interval = (max - min)/4;
+
+  var color = d3.scale.linear() // Color scale based on dynamic data
+    .domain([min + interval, min + (2*interval), min + (3*interval), max])
+    .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+
+  var legendText = [
+    min.toFixed(2).toString() + " % - " + (min + interval).toFixed(2).toString() + " %", 
+    (min + interval).toFixed(2).toString() + " % - " + (min + (2*interval)).toFixed(2).toString() + " %", 
+    (min + (2*interval)).toFixed(2).toString() + " % - " + (min + (3*interval)).toFixed(2).toString() + " %", 
+    (min + (3*interval)).toFixed(2).toString() + " % - " + max.toFixed(2).toString() + " %"
+    ]; // Text of the legend
+
+  var legend = d3.select("#legend")
+    .append("svg")
+    .attr("class", "legend")
+    .selectAll("g")
+    .data(color.domain())
+    .enter()
+    .append("g")
+    .attr("transform", function(d, i) { 
+      return "translate(20," + i * 15 + ")"; 
+    });
+          
+    legend.append("rect") // Draws the color rectangle
+      .attr("width", 25)
+      .attr("height", 15)
+      .style("fill", color);
+
+    legend.append("text") // Renders the text
+      .data(legendText)
+      .attr("x", 27)
+      .attr("y", 9)
+      .attr("dy", ".30em")
+      .text(function(d) {
+         return d; 
+    });
 }
 
 window.onload = onInit();

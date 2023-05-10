@@ -62,3 +62,7 @@ div.tooltip {
     border-radius: 4px;         
     pointer-events: none;           
 }
+
+.legend {
+    font: 16px sans-serif;
+}
