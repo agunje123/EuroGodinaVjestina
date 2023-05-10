@@ -3,22 +3,6 @@ body {
     font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
 }
 
-/* .header_image {
-    background-image: url("images/background_header.jpg");
-    background-repeat: no-repeat;
-    background-color: whitesmoke;
-    background-size: 100%;
-    background-attachment: fixed;
-
-    height:100vh;
-}
-
-.header_content{
-    text-align: center;
-    display: flex;
-    justify-content: flex-end;
-} */
-
 #container {
     width: 920px;
     margin-left: auto;

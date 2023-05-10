@@ -1,3 +1,5 @@
+// Labor shortage map.
+
 var width, height, projection, path, svg;
 var attributeArray = [];
 var currentAttribute = 0;
@@ -46,7 +48,7 @@ function loadData() {
 
   queue() 
     .defer(d3.json, "data/world-topo.json")
-    .defer(d3.csv, "data/podaci_transformirani.csv")
+    .defer(d3.csv, "data/EnterprisePercentage.csv")
     .await(processData);
 }
 
