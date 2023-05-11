@@ -91,7 +91,7 @@ function drawMap(europeMap) {
           .duration(500)      
           .style("opacity", 1);   
       if (d.properties[attributeArray[currentAttribute]] != undefined && d.properties[attributeArray[currentAttribute]] != 0) { 
-        tooltipDiv.html(d.properties.admin + "'s percentage: " + d.properties[attributeArray[currentAttribute]] + "%")  
+        tooltipDiv.html(d.properties.admin + "'s percentage: " + (100 - d.properties[attributeArray[currentAttribute]]).toFixed(1) + "%")  
           .style("left", (d3.event.pageX) + "px")     
           .style("top", (d3.event.pageY - 28) + "px");  
       } else {
@@ -147,16 +147,20 @@ function sequenceMap() {
 // Returns the color according to a equal interval scale.
 function getColor(countryValue, dataRange) {
 
-  // For readability
-  var min = dataRange[0];
-  var max = dataRange[1];
-  var interval = (max - min)/4;
+  // If you want to implement a dynamic domain and range, this is the way to go.
+  // For the purpose of this project, we used fixed classes as they make it easier to compare between years.
+  // var min = dataRange[0];
+  // var max = dataRange[1];
+  // var interval = (max - min)/4;
+  // var color = d3.scale.threshold()
+  //   .domain([min + interval, min + (2*interval), min + (3*interval)])
+  //   .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
 
-  var color = d3.scale.threshold()
-    .domain([min + interval, min + (2*interval), min + (3*interval)])
-    .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+var color = d3.scale.threshold()
+  .domain([20, 40, 60, 80, 100])
+  .range(['#fee5d9', '#fdb195', '#fc7f5e', '#e53f2f', '#a50f15'].reverse());
 
-  return color(countryValue);
+return color(countryValue);
 }
 
 
@@ -214,21 +218,30 @@ function drawLegend() {
     .select("svg.legend")
     .remove(); // Removes previous legend if there is any
 
-  var dataRange = getDataRange(); // Fetches the data range 
-  var min = dataRange[0];
-  var max = dataRange[1];
-  var interval = (max - min)/4;
+  // If you want to implement a dynamic domain and range, this is the way to go.
+  // For the purpose of this project, we used fixed classes as they make it easier to compare between years.
 
-  var color = d3.scale.linear() // Color scale based on dynamic data
-    .domain([min + interval, min + (2*interval), min + (3*interval), max])
-    .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+  // var dataRange = getDataRange(); // Fetches the data range 
+  // var min = dataRange[0];
+  // var max = dataRange[1];
+  // var interval = (max - min)/4;
 
-  var legendText = [
-    min.toFixed(2).toString() + " % - " + (min + interval).toFixed(2).toString() + " %", 
-    (min + interval).toFixed(2).toString() + " % - " + (min + (2*interval)).toFixed(2).toString() + " %", 
-    (min + (2*interval)).toFixed(2).toString() + " % - " + (min + (3*interval)).toFixed(2).toString() + " %", 
-    (min + (3*interval)).toFixed(2).toString() + " % - " + max.toFixed(2).toString() + " %"
-    ]; // Text of the legend
+  // var color = d3.scale.linear() // Color scale based on dynamic data
+  //   .domain([min + interval, min + (2*interval), min + (3*interval), max])
+  //   .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+
+  // var legendText = [
+  //   min.toFixed(2).toString() + " % - " + (min + interval).toFixed(2).toString() + " %", 
+  //   (min + interval).toFixed(2).toString() + " % - " + (min + (2*interval)).toFixed(2).toString() + " %", 
+  //   (min + (2*interval)).toFixed(2).toString() + " % - " + (min + (3*interval)).toFixed(2).toString() + " %", 
+  //   (min + (3*interval)).toFixed(2).toString() + " % - " + max.toFixed(2).toString() + " %"
+  //   ]; // Text of the legend
+
+  var color = d3.scale.linear()
+    .domain([20, 40, 60, 80, 100])
+    .range(['#fee5d9', '#fdb195', '#fc7f5e', '#e53f2f', '#a50f15']);
+  
+  var legendText = ["0% - 20%", "20% - 40%", "40% - 60%", "60% - 80%", "80% - 100%"];
 
   var legend = d3.select("#legend")
     .append("svg")

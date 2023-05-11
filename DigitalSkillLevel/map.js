@@ -147,15 +147,18 @@ function sequenceMap() {
 // Returns the color according to a equal interval scale.
 function getColor(countryValue, dataRange) {
 
-  // For readability
-  var min = dataRange[0];
-  var max = dataRange[1];
-  var interval = (max - min)/4;
+  // If you want to implement a dynamic domain and range, this is the way to go.
+  // For the purpose of this project, we used fixed classes as they make it easier to compare between years.
+  // var min = dataRange[0];
+  // var max = dataRange[1];
+  // var interval = (max - min)/4;
+  // var color = d3.scale.threshold()
+  //   .domain([min + interval, min + (2*interval), min + (3*interval)])
+  //   .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
 
-  var color = d3.scale.threshold()
-    .domain([min + interval, min + (2*interval), min + (3*interval)])
+  var color = d3.scale.linear()
+    .domain([40, 55, 70, 90])
     .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
-
   return color(countryValue);
 }
 
@@ -214,21 +217,30 @@ function drawLegend() {
     .select("svg.legend")
     .remove(); // Removes previous legend if there is any
 
-  var dataRange = getDataRange(); // Fetches the data range 
-  var min = dataRange[0];
-  var max = dataRange[1];
-  var interval = (max - min)/4;
+  // If you want to implement a dynamic domain and range, this is the way to go.
+  // For the purpose of this project, we used fixed classes as they make it easier to compare between years.
 
-  var color = d3.scale.linear() // Color scale based on dynamic data
-    .domain([min + interval, min + (2*interval), min + (3*interval), max])
+  // var dataRange = getDataRange(); // Fetches the data range 
+  // var min = dataRange[0];
+  // var max = dataRange[1];
+  // var interval = (max - min)/4;
+
+  // var color = d3.scale.linear() // Color scale based on dynamic data
+  //   .domain([min + interval, min + (2*interval), min + (3*interval), max])
+  //   .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
+
+  // var legendText = [
+  //   min.toFixed(2).toString() + " % - " + (min + interval).toFixed(2).toString() + " %", 
+  //   (min + interval).toFixed(2).toString() + " % - " + (min + (2*interval)).toFixed(2).toString() + " %", 
+  //   (min + (2*interval)).toFixed(2).toString() + " % - " + (min + (3*interval)).toFixed(2).toString() + " %", 
+  //   (min + (3*interval)).toFixed(2).toString() + " % - " + max.toFixed(2).toString() + " %"
+  //   ]; // Text of the legend
+
+  var color = d3.scale.linear()
+    .domain([40, 55, 70, 90])
     .range(['#ffffcc','#a1dab4','#41b6c4','#225ea8']);
 
-  var legendText = [
-    min.toFixed(2).toString() + " % - " + (min + interval).toFixed(2).toString() + " %", 
-    (min + interval).toFixed(2).toString() + " % - " + (min + (2*interval)).toFixed(2).toString() + " %", 
-    (min + (2*interval)).toFixed(2).toString() + " % - " + (min + (3*interval)).toFixed(2).toString() + " %", 
-    (min + (3*interval)).toFixed(2).toString() + " % - " + max.toFixed(2).toString() + " %"
-    ]; // Text of the legend
+  var legendText = ["≤40%", "≤55%", "≤70%", "≤90%"];
 
   var legend = d3.select("#legend")
     .append("svg")
